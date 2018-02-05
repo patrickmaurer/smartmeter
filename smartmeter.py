@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Initial work by Joost Baltissen and Romain Aviolat
 
-import sys,time,serial,struct,argparse
+import sys,time,serial,struct
 from influxdb import InfluxDBClient
 
 class smartmeter():
@@ -91,22 +91,4 @@ class smartmeter():
 if __name__ == '__main__':
 
     device = smartmeter()
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-D', '--daemon', action="store_true", help="Fork and run in background")
-    args = parser.parse_args()
-
-    if args.daemon:
-
-        if os.fork()==0:
-            os.setsid()
-            sys.stdout=open("/dev/null", 'w')
-            sys.stdin=open("/dev/null", 'r')
-
-            if os.fork()==0:
-                device.readData()
-            sys.exit(0)
-
-    else:
-
-        device.readData()
+    device.readData()
