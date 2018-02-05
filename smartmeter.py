@@ -18,7 +18,7 @@ class smartmeter():
             timeout = 20
          )
 
-    def readData(self, source=None, event=None):
+    def readData(self):
 
         while True:
 
@@ -41,7 +41,6 @@ class smartmeter():
             self.ser.flushInput()
             ack= struct.pack('BBBBBB',0x06,0x30,0x30,0x30,0x0D,0x0A)
             self.ser.write(ack)
-            print ack
             time.sleep(.02)
 
             self.ser.flushInput()
@@ -104,11 +103,8 @@ if __name__ == '__main__':
     device = smartmeter()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--device', help="Specify the device ex: /dev/ttyUSB0", required=True)
     parser.add_argument('-D', '--daemon', action="store_true", help="Fork and run in background")
     args = parser.parse_args()
-                    
-    #device.ser.port = args.device
 
     if args.daemon:
 
