@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Initial work: Joost Baltissen
-# 2016.10.xx: Romain Aviolat -> added argument support
-#                            -> send output to Influxdb
+# Initial work by Joost Baltissen and Romain Aviolat
 
-import sys,time,serial,struct,numpy,requests,argparse
+import sys,time,serial,struct,argparse
 from influxdb import InfluxDBClient
 
 class smartmeter():
@@ -25,7 +23,7 @@ class smartmeter():
         while True:
 
             self.ser.close()
-            #self.ser.open()
+
             try:
                 self.ser.open()
             except:
@@ -41,10 +39,6 @@ class smartmeter():
             tdata += self.ser.read(data_left) # Do the read and combine it with the first character
 
             self.ser.flushInput()
-            intString = numpy.frombuffer(tdata, numpy.uint8)
-            Baudrate = tdata[4]
-            ModID = tdata[6]
-            intBaudrate = numpy.frombuffer(Baudrate, numpy.int8)
             ack= struct.pack('BBBBBB',0x06,0x30,0x30,0x30,0x0D,0x0A)
             self.ser.write(ack)
             print ack
@@ -56,7 +50,7 @@ class smartmeter():
             data_left = self.ser.inWaiting()  # Get the number of characters ready to be read
             tdata += self.ser.read(data_left) # Do the read and combine it with the first character
             self.ser.close()
-        
+
             start = tdata.find('1.8.1')+6
             end = tdata.find('*', start)
             use_high = float(tdata[start:end])
@@ -80,11 +74,11 @@ class smartmeter():
                     'use_high':use_high, 
                     'prod_low':prod_low, 
                     'prod_high':prod_high}
-            
+
             stacked_json = []
-            
+
             for val in values:
-            
+
                 json_body = {
                     "measurement": val,
                     "tags": {
@@ -94,9 +88,9 @@ class smartmeter():
                         "value": values[val]
                     }
                 }
-            
+
                 stacked_json.append(json_body)
-            
+
             print(stacked_json)
 
             client = InfluxDBClient('localhost', 8086, 'user', 'pass', 'smartmeter_db')
@@ -104,7 +98,7 @@ class smartmeter():
 
             time.sleep(30)
 
-            
+
 if __name__ == '__main__':
 
     device = smartmeter()
