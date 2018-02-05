@@ -37,6 +37,7 @@ class smartmeter():
             time.sleep(1)                     # Sleep (or inWaiting() doesn't give the correct value)
             data_left = self.ser.inWaiting()  # Get the number of characters ready to be read
             tdata += self.ser.read(data_left) # Do the read and combine it with the first character
+            meter = tdata.strip()
 
             self.ser.flushInput()
             ack= struct.pack('BBBBBB',0x06,0x30,0x30,0x30,0x0D,0x0A)
@@ -50,52 +51,41 @@ class smartmeter():
             tdata += self.ser.read(data_left) # Do the read and combine it with the first character
             self.ser.close()
 
-            start = tdata.find('1.8.1')+6
+            start = tdata.find('8.1(')+4
             end = tdata.find('*', start)
-            use_high = float(tdata[start:end])
+            use_high_str = tdata[start:end]
+            use_high = float(use_high_str)
 
-            start = tdata.find('1.8.2')+6
+            start = tdata.find('8.2(')+4
             end = tdata.find('*', start)
-            use_low = float(tdata[start:end])
+            use_low_str = tdata[start:end]
+            use_low = float(use_low_str)
 
-            start = tdata.find('2.8.1')+6
+            start = tdata.find('8.0(')+4
             end = tdata.find('*', start)
-            prod_high = float(tdata[start:end])
+            use_total_str = tdata[start:end]
+            use_total = float(use_total_str)
 
-            start = tdata.find('2.8.2')+6
-            end = tdata.find('*', start)
-            prod_low = float(tdata[start:end])
-
-            start = tdata.find('31.7(')+5
-            end = tdata.find('*', start)
-
-            values={'use_low':use_low, 
-                    'use_high':use_high, 
-                    'prod_low':prod_low, 
-                    'prod_high':prod_high}
-
-            stacked_json = []
-
-            for val in values:
-
-                json_body = {
-                    "measurement": val,
-                    "tags": {
-                        "host": "smartmeter"
-                    },
-                    "fields": {
-                        "value": values[val]
-                    }
+            json_body = {
+                "measurement": "power",
+                "tags": {
+                    "tool": "smartmeter.py",
+                    "interface": self.ser.port,
+                    "meter": meter
+                },
+                "fields": {
+                    "usage_low": use_low,
+                    "usage_high": use_high,
+                    "usage_total": use_total
                 }
+            }
 
-                stacked_json.append(json_body)
-
-            print(stacked_json)
+            print(json_body)
 
             client = InfluxDBClient('localhost', 8086, 'user', 'pass', 'smartmeter_db')
-            client.write_points(stacked_json)
+            client.write_points([json_body])
 
-            time.sleep(30)
+            time.sleep(60)
 
 
 if __name__ == '__main__':

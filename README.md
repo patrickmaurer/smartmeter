@@ -2,8 +2,8 @@
 
 This tool reads the values contained inside Landis+Gyr
 power-meters and sends the output to InfluxDB. It has been 
-tested with the E230 and ZMB120 models, but it should work
-with any other IEC 62056 compliant devices too.
+tested with the ZMB120 model, but it should work with any
+other IEC 62056 compliant devices too.
 
 Some meters report usage data as floating point numbers.
 Others report as integers only, unfortunately.
