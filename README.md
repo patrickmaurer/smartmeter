@@ -30,9 +30,16 @@ database and credential settings inside the code for now.
 
 # run
 
-``$ python ./smartmeter.py -d /dev/ttyUSB0``
+``$ python ./smartmeter.py``
 
-* ``-D``:  daemonize
+# install service
+1. save smartmeter.service to /lib/systemd/system/
+2. ``sudo chmod 644 /lib/systemd/system/smartmeter.service``
+3. ``sudo systemctl daemon-reload``
+4. ``sudo systemctl enable smartmeter.service``
+5. ``sudo systemctl start smartmeter.service``
+6. ``sudo systemctl status smartmeter.service``
+The last command should report the service running.
 
 # credits
 
